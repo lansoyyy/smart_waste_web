@@ -109,10 +109,6 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
             textCapitalization: widget.textCapitalization!,
             keyboardType: widget.inputType,
             decoration: InputDecoration(
-              prefixIcon: Icon(
-                widget.prefixIcon,
-                color: primary,
-              ),
               filled: true,
               fillColor: grey.withOpacity(0.2),
               suffixIcon: widget.showEye! == true
