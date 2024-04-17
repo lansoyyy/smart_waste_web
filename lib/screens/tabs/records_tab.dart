@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_waste_web/screens/tabs/user_records_page.dart';
 import 'package:smart_waste_web/widgets/text_widget.dart';
 
 class RecordsTab extends StatelessWidget {
@@ -9,6 +10,7 @@ class RecordsTab extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(left: 20, top: 50),
       child: DataTable(
+        showCheckboxColumn: false,
         border: TableBorder.all(),
         columnSpacing: 125,
         columns: [
@@ -44,6 +46,10 @@ class RecordsTab extends StatelessWidget {
         rows: [
           for (int i = 0; i < 10; i++)
             DataRow(
+                onSelectChanged: (value) {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => const UserRecordsPage()));
+                },
                 color: MaterialStateColor.resolveWith(
                   (states) => i % 2 == 0 ? Colors.white : Colors.grey[200]!,
                 ),

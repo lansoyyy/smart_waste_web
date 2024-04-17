@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_waste_web/screens/home_screen.dart';
 import 'package:smart_waste_web/screens/login_screen.dart';
+import 'package:smart_waste_web/screens/tabs/user_records_page.dart';
 
 void main() {
   runApp(const MyApp());

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:smart_waste_web/screens/login_screen.dart';
+import 'package:smart_waste_web/screens/tabs/items_tab.dart';
 import 'package:smart_waste_web/screens/tabs/records_tab.dart';
 
 import '../utlis/colors.dart';
@@ -206,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(
                     height: 20,
                   ),
-                  inrecords ? const RecordsTab() : const SizedBox()
+                  inrecords ? const RecordsTab() : const ItemsTab()
                   //         ? const EnforcerTab()
                   //         : intickets
                   //             ? const TicketsTab()
