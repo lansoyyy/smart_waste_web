@@ -42,14 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Container(
-                          decoration: BoxDecoration(
-                              border: Border.all(color: primary),
-                              shape: BoxShape.circle,
-                              color: Colors.white),
                           child: Padding(
                             padding: const EdgeInsets.all(2.5),
                             child: Image.asset(
-                              'assets/images/logo.png',
+                              'assets/images/logs.png',
                               height: 50,
                             ),
                           ),
