@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
 import 'package:smart_waste_web/screens/login_screen.dart';
 import 'package:smart_waste_web/screens/tabs/items_tab.dart';
@@ -105,12 +106,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     ListTile(
                       tileColor: inqrcode ? primary : Colors.transparent,
-                      onTap: () {
+                      onTap: () async {
+                        var res = await Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const SimpleBarcodeScannerPage(),
+                            ));
+                        print(res);
                         setState(() {
-                          inrecords = false;
-                          initems = false;
-                          inqrcode = true;
-                          intickets = false;
+                          if (res is String) {
+                            // result = res;
+                          }
                         });
                       },
                       title: TextWidget(
