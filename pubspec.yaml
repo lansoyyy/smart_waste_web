@@ -38,6 +38,10 @@ dependencies:
   fluttertoast:
   intl:
   simple_barcode_scanner:
+  firebase_core:
+  cloud_firestore:
+  firebase_storage:
+  firebase_auth:
 
 dev_dependencies:
   flutter_test:
