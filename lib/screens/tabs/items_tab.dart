@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_waste_web/screens/tabs/user_records_page.dart';
+import 'package:smart_waste_web/services/add_item.dart';
 import 'package:smart_waste_web/widgets/button_widget.dart';
 import 'package:smart_waste_web/widgets/text_widget.dart';
 import 'package:smart_waste_web/widgets/textfield_widget.dart';
@@ -34,24 +36,13 @@ class _ItemsTabState extends State<ItemsTab> {
                   builder: (context) {
                     return Dialog(
                       child: SizedBox(
-                        height: 400,
                         width: 400,
                         child: Padding(
                           padding: const EdgeInsets.all(10.0),
                           child: Column(
+                            mainAxisSize: MainAxisSize.min,
                             mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 20, right: 20, bottom: 10, top: 10),
-                                child: Container(
-                                  width: double.infinity,
-                                  height: 150,
-                                  decoration: const BoxDecoration(
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
                               TextFieldWidget(
                                 controller: name,
                                 label: 'Item Name:',
@@ -72,9 +63,13 @@ class _ItemsTabState extends State<ItemsTab> {
                                 width: 150,
                                 label: 'Add',
                                 onPressed: () {
+                                  addItem(name.text, int.parse(pts.text));
                                   showToast('Item added succesfully!');
                                   Navigator.pop(context);
                                 },
+                              ),
+                              const SizedBox(
+                                height: 10,
                               ),
                             ],
                           ),
@@ -89,97 +84,131 @@ class _ItemsTabState extends State<ItemsTab> {
           const SizedBox(
             height: 10,
           ),
-          DataTable(
-            showCheckboxColumn: false,
-            border: TableBorder.all(),
-            columnSpacing: 125,
-            columns: [
-              DataColumn(
-                label: TextWidget(
-                  text: 'Item Number',
-                  fontSize: 18,
-                  fontFamily: 'Bold',
-                ),
-              ),
-              DataColumn(
-                label: TextWidget(
-                  text: 'Item Name',
-                  fontSize: 18,
-                  fontFamily: 'Bold',
-                ),
-              ),
-              DataColumn(
-                label: TextWidget(
-                  text: 'Quantity',
-                  fontSize: 18,
-                  fontFamily: 'Bold',
-                ),
-              ),
-              DataColumn(
-                label: TextWidget(
-                  text: 'Actions',
-                  fontSize: 18,
-                  fontFamily: 'Bold',
-                ),
-              ),
-            ],
-            rows: [
-              for (int i = 0; i < 10; i++)
-                DataRow(
-                    color: MaterialStateColor.resolveWith(
-                      (states) => i % 2 == 0 ? Colors.white : Colors.grey[200]!,
+          StreamBuilder<QuerySnapshot>(
+              stream:
+                  FirebaseFirestore.instance.collection('Items').snapshots(),
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (snapshot.hasError) {
+                  print('error');
+                  return const Center(child: Text('Error'));
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 50),
+                    child: Center(
+                        child: CircularProgressIndicator(
+                      color: Colors.black,
+                    )),
+                  );
+                }
+
+                final data = snapshot.requireData;
+                return DataTable(
+                  showCheckboxColumn: false,
+                  border: TableBorder.all(),
+                  columnSpacing: 125,
+                  columns: [
+                    DataColumn(
+                      label: TextWidget(
+                        text: 'Item Number',
+                        fontSize: 18,
+                        fontFamily: 'Bold',
+                      ),
                     ),
-                    cells: [
-                      DataCell(
-                        TextWidget(
-                          text: '${i + 1}',
-                          fontSize: 14,
-                          fontFamily: 'Medium',
-                          color: Colors.grey,
-                        ),
+                    DataColumn(
+                      label: TextWidget(
+                        text: 'Item Name',
+                        fontSize: 18,
+                        fontFamily: 'Bold',
                       ),
-                      DataCell(
-                        TextWidget(
-                          text: 'Sardines',
-                          fontSize: 14,
-                          fontFamily: 'Medium',
-                          color: Colors.grey,
-                        ),
+                    ),
+                    DataColumn(
+                      label: TextWidget(
+                        text: 'Quantity',
+                        fontSize: 18,
+                        fontFamily: 'Bold',
                       ),
-                      DataCell(
-                        TextWidget(
-                          text: '5',
-                          fontSize: 14,
-                          fontFamily: 'Medium',
-                          color: Colors.grey,
-                        ),
+                    ),
+                    DataColumn(
+                      label: TextWidget(
+                        text: 'Actions',
+                        fontSize: 18,
+                        fontFamily: 'Bold',
                       ),
-                      DataCell(
-                        Row(
-                          children: [
-                            ButtonWidget(
-                              color: Colors.blue,
-                              height: 35,
-                              width: 125,
-                              label: 'Add',
-                              onPressed: () {},
+                    ),
+                  ],
+                  rows: [
+                    for (int i = 0; i < data.docs.length; i++)
+                      DataRow(
+                          color: MaterialStateColor.resolveWith(
+                            (states) =>
+                                i % 2 == 0 ? Colors.white : Colors.grey[200]!,
+                          ),
+                          cells: [
+                            DataCell(
+                              TextWidget(
+                                text: '${i + 1}',
+                                fontSize: 14,
+                                fontFamily: 'Medium',
+                                color: Colors.grey,
+                              ),
                             ),
-                            const SizedBox(
-                              width: 10,
+                            DataCell(
+                              TextWidget(
+                                text: data.docs[i]['name'],
+                                fontSize: 14,
+                                fontFamily: 'Medium',
+                                color: Colors.grey,
+                              ),
                             ),
-                            ButtonWidget(
-                              color: Colors.red,
-                              height: 35,
-                              width: 125,
-                              label: 'Delete',
-                              onPressed: () {},
+                            DataCell(
+                              TextWidget(
+                                text: data.docs[i]['qty'].toString(),
+                                fontSize: 14,
+                                fontFamily: 'Medium',
+                                color: Colors.grey,
+                              ),
                             ),
-                          ],
-                        ),
-                      ),
-                    ])
-            ],
-          ),
+                            DataCell(
+                              Row(
+                                children: [
+                                  ButtonWidget(
+                                    color: Colors.blue,
+                                    height: 35,
+                                    width: 125,
+                                    label: 'Add',
+                                    onPressed: () async {
+                                      await FirebaseFirestore.instance
+                                          .collection('Items')
+                                          .doc(data.docs[i].id)
+                                          .update({
+                                        'qty': FieldValue.increment(1),
+                                      });
+                                    },
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  ButtonWidget(
+                                    color: Colors.red,
+                                    height: 35,
+                                    width: 125,
+                                    label: 'Delete',
+                                    onPressed: () async {
+                                      await FirebaseFirestore.instance
+                                          .collection('Items')
+                                          .doc(data.docs[i].id)
+                                          .delete();
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ])
+                  ],
+                );
+              }),
         ],
       ),
     );
