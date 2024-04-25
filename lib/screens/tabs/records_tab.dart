@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_waste_web/screens/tabs/user_records_page.dart';
 import 'package:smart_waste_web/widgets/text_widget.dart';
@@ -7,88 +8,108 @@ class RecordsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 20, top: 50),
-      child: DataTable(
-        showCheckboxColumn: false,
-        border: TableBorder.all(),
-        columnSpacing: 125,
-        columns: [
-          DataColumn(
-            label: TextWidget(
-              text: 'ID Number',
-              fontSize: 18,
-              fontFamily: 'Bold',
-            ),
-          ),
-          DataColumn(
-            label: TextWidget(
-              text: 'Name',
-              fontSize: 18,
-              fontFamily: 'Bold',
-            ),
-          ),
-          DataColumn(
-            label: TextWidget(
-              text: 'Address',
-              fontSize: 18,
-              fontFamily: 'Bold',
-            ),
-          ),
-          DataColumn(
-            label: TextWidget(
-              text: 'Phone Number',
-              fontSize: 18,
-              fontFamily: 'Bold',
-            ),
-          ),
-        ],
-        rows: [
-          for (int i = 0; i < 10; i++)
-            DataRow(
-                onSelectChanged: (value) {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (context) => const UserRecordsPage()));
-                },
-                color: MaterialStateColor.resolveWith(
-                  (states) => i % 2 == 0 ? Colors.white : Colors.grey[200]!,
+    return StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('Records').snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            print(snapshot.error);
+            return const Center(child: Text('Error'));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Padding(
+              padding: EdgeInsets.only(top: 50),
+              child: Center(
+                  child: CircularProgressIndicator(
+                color: Colors.black,
+              )),
+            );
+          }
+
+          final data = snapshot.requireData;
+          return Padding(
+            padding: const EdgeInsets.only(left: 20, top: 50),
+            child: DataTable(
+              showCheckboxColumn: false,
+              border: TableBorder.all(),
+              columnSpacing: 125,
+              columns: [
+                DataColumn(
+                  label: TextWidget(
+                    text: 'ID Number',
+                    fontSize: 18,
+                    fontFamily: 'Bold',
+                  ),
                 ),
-                cells: [
-                  DataCell(
-                    TextWidget(
-                      text: '${i + 1}',
-                      fontSize: 14,
-                      fontFamily: 'Medium',
-                      color: Colors.grey,
-                    ),
+                DataColumn(
+                  label: TextWidget(
+                    text: 'Name',
+                    fontSize: 18,
+                    fontFamily: 'Bold',
                   ),
-                  DataCell(
-                    TextWidget(
-                      text: 'John Doe',
-                      fontSize: 14,
-                      fontFamily: 'Medium',
-                      color: Colors.grey,
-                    ),
+                ),
+                DataColumn(
+                  label: TextWidget(
+                    text: 'Item Name',
+                    fontSize: 18,
+                    fontFamily: 'Bold',
                   ),
-                  DataCell(
-                    TextWidget(
-                      text: 'Impalambong, Malaybalay Bukidnon',
-                      fontSize: 14,
-                      fontFamily: 'Medium',
-                      color: Colors.grey,
-                    ),
+                ),
+                DataColumn(
+                  label: TextWidget(
+                    text: 'Equivalent Points',
+                    fontSize: 18,
+                    fontFamily: 'Bold',
                   ),
-                  DataCell(
-                    TextWidget(
-                      text: '09090104355',
-                      fontSize: 14,
-                      fontFamily: 'Medium',
-                      color: Colors.grey,
-                    ),
-                  ),
-                ])
-        ],
-      ),
-    );
+                ),
+              ],
+              rows: [
+                for (int i = 0; i < data.docs.length; i++)
+                  DataRow(
+                      onSelectChanged: (value) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (context) => const UserRecordsPage()));
+                      },
+                      color: MaterialStateColor.resolveWith(
+                        (states) =>
+                            i % 2 == 0 ? Colors.white : Colors.grey[200]!,
+                      ),
+                      cells: [
+                        DataCell(
+                          TextWidget(
+                            text: '${i + 1}',
+                            fontSize: 14,
+                            fontFamily: 'Medium',
+                            color: Colors.grey,
+                          ),
+                        ),
+                        DataCell(
+                          TextWidget(
+                            text: data.docs[i]['myname'],
+                            fontSize: 14,
+                            fontFamily: 'Medium',
+                            color: Colors.grey,
+                          ),
+                        ),
+                        DataCell(
+                          TextWidget(
+                            text: data.docs[i]['name'],
+                            fontSize: 14,
+                            fontFamily: 'Medium',
+                            color: Colors.grey,
+                          ),
+                        ),
+                        DataCell(
+                          TextWidget(
+                            text: '${data.docs[i]['pts']} pts',
+                            fontSize: 14,
+                            fontFamily: 'Medium',
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ])
+              ],
+            ),
+          );
+        });
   }
 }
