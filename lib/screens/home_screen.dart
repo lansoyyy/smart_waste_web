@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:qr_bar_code_scanner_dialog/qr_bar_code_scanner_dialog.dart';
 import 'package:simple_barcode_scanner/simple_barcode_scanner.dart';
 
 import 'package:smart_waste_web/screens/login_screen.dart';
@@ -22,6 +24,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool inqrcode = false;
   bool intickets = false;
+
+  final _qrBarCodeScannerDialogPlugin = QrBarCodeScannerDialog();
+  String? code;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -107,18 +112,46 @@ class _HomeScreenState extends State<HomeScreen> {
                     ListTile(
                       tileColor: inqrcode ? primary : Colors.transparent,
                       onTap: () async {
-                        var res = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const SimpleBarcodeScannerPage(),
-                            ));
-                        print(res);
-                        setState(() {
-                          if (res is String) {
-                            // result = res;
-                          }
-                        });
+                        _qrBarCodeScannerDialogPlugin.getScannedQrBarCode(
+                            context: context,
+                            onCode: (code) async {
+                              await FirebaseFirestore.instance
+                                  .collection('Records')
+                                  .doc(code)
+                                  .get()
+                                  .then((DocumentSnapshot
+                                      documentSnapshot) async {
+                                showDialog(
+                                  context: context,
+                                  barrierDismissible: false,
+                                  builder: (context) {
+                                    return AlertDialog(
+                                      content: TextWidget(
+                                        text: 'QR Code Scanned Succesfully!',
+                                        fontSize: 48,
+                                        fontFamily: 'Bold',
+                                      ),
+                                      actions: <Widget>[
+                                        MaterialButton(
+                                          onPressed: () async {
+                                            Navigator.pop(context);
+                                            showReceipt(documentSnapshot);
+                                          },
+                                          child: const Text(
+                                            'Generate Receipt',
+                                            style: TextStyle(
+                                                fontFamily: 'QRegular',
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              }).catchError((error) {
+                                print('Error fetching data: $error');
+                              });
+                            });
                       },
                       title: TextWidget(
                         text: 'QR Code',
@@ -221,6 +254,56 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  showReceipt(data) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          content: Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                TextWidget(
+                  text: 'User name: ${data['myname']}',
+                  fontSize: 18,
+                ),
+                TextWidget(
+                  text: 'Item name: ${data['name']}',
+                  fontSize: 18,
+                ),
+                TextWidget(
+                  text: 'Equivalent Points: ${data['pts']} pts',
+                  fontSize: 18,
+                ),
+                TextWidget(
+                  text:
+                      'Date and Time: ${DateFormat.yMMMd().add_jm().format(data['dateTime'].toDate())}',
+                  fontSize: 18,
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            MaterialButton(
+              onPressed: () async {
+                Navigator.pop(context);
+              },
+              child: const Text(
+                'Close',
+                style: TextStyle(
+                    fontFamily: 'QRegular', fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
