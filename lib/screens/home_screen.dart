@@ -134,8 +134,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                       actions: <Widget>[
                                         MaterialButton(
                                           onPressed: () async {
-                                            Navigator.pop(context);
-                                            showReceipt(documentSnapshot);
+                                            showReceipt(
+                                                documentSnapshot.data());
                                           },
                                           child: const Text(
                                             'Generate Receipt',
