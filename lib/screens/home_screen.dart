@@ -117,10 +117,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             onCode: (code) async {
                               await FirebaseFirestore.instance
                                   .collection('Records')
-                                  .doc(code)
+                                  .doc(code!.split('= ')[1])
                                   .get()
                                   .then((DocumentSnapshot
                                       documentSnapshot) async {
+                                print('My code ${code.split('= ')[1]}');
+
                                 showDialog(
                                   context: context,
                                   barrierDismissible: false,
